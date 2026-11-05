@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "pattern": [
+    "## ",
+    "#S ",
+    "  S"
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "#": "minecraft:cobblestone"
+  },
+  "result": {
+    "id": "ancientwarfare:stone_spear"
+  }
+}

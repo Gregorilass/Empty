@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "pattern": [
+    " # ",
+    " # ",
+    "#S#"
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "#": "minecraft:gold_ingot"
+  },
+  "result": {
+    "id": "ancientwarfare:golden_lance"
+  }
+}
