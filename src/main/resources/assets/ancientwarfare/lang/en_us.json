@@ -30,5 +30,9 @@
   "item.ancientwarfare.stone_cleaver": "Stone Cleaver",
   "item.ancientwarfare.iron_cleaver": "Iron Cleaver",
   "item.ancientwarfare.golden_cleaver": "Golden Cleaver",
-  "item.ancientwarfare.diamond_cleaver": "Diamond Cleaver"
+  "item.ancientwarfare.diamond_cleaver": "Diamond Cleaver",
+  "entity.ancientwarfare.worker": "Ancient Worker",
+  "entity.ancientwarfare.soldier": "Ancient Soldier",
+  "item.ancientwarfare.worker_spawn_egg": "Ancient Worker Spawn Egg",
+  "item.ancientwarfare.soldier_spawn_egg": "Ancient Soldier Spawn Egg"
 }

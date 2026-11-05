@@ -5,6 +5,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.SpawnEggItem;
+import net.shadowmage.ancientwarfare.core.npc.AWNpcRegistry;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -13,9 +15,9 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * Ancient Warfare 2 modern-port milestone 3.
- * Core crafting materials plus faithful Remastered melee models and native combat stats; no NPC, structure placement, machine,
- * vehicle, research, combat or world-gen functionality is present yet.
+ * Ancient Warfare 2 modern-port milestone 4.
+ * Adds manually spawned worker and soldier NPC roles with owner/guard/follow behavior,
+ * small-scale crop harvesting and monster defense. Not a complete Ancient Warfare NPC port.
  */
 @Mod(AncientWarfareCore.MOD_ID)
 public final class AncientWarfareCore {
@@ -59,6 +61,11 @@ public final class AncientWarfareCore {
     public static final DeferredItem<Item> GOLDEN_CLEAVER = ITEMS.registerItem("golden_cleaver", props -> new Item(props.sword(ToolMaterial.GOLD, 3.5F, -2.8F)));
     public static final DeferredItem<Item> DIAMOND_CLEAVER = ITEMS.registerItem("diamond_cleaver", props -> new Item(props.sword(ToolMaterial.DIAMOND, 3.5F, -2.8F)));
 
+    public static final DeferredItem<Item> WORKER_SPAWN_EGG = ITEMS.registerItem("worker_spawn_egg",
+        props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.WORKER.get())));
+    public static final DeferredItem<Item> SOLDIER_SPAWN_EGG = ITEMS.registerItem("soldier_spawn_egg",
+        props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.SOLDIER.get())));
+
     private static final DeferredHolder<CreativeModeTab, CreativeModeTab> MATERIALS_TAB =
             TABS.register("materials", () -> CreativeModeTab.builder()
                 .title(Component.translatable("itemGroup.ancientwarfare"))
@@ -95,9 +102,13 @@ public final class AncientWarfareCore {
                 output.accept(IRON_CLEAVER.get());
                 output.accept(GOLDEN_CLEAVER.get());
                 output.accept(DIAMOND_CLEAVER.get());
+                output.accept(WORKER_SPAWN_EGG.get());
+                output.accept(SOLDIER_SPAWN_EGG.get());
                 }).build());
 
     public AncientWarfareCore(IEventBus modBus, ModContainer container) {
+        AWNpcRegistry.ENTITIES.register(modBus);
+        modBus.addListener(AWNpcRegistry::registerAttributes);
         ITEMS.register(modBus);
         TABS.register(modBus);
     }
