@@ -3,7 +3,7 @@ name: Import Ancient Warfare Project
 on:
   push:
     paths:
-      - ".github/workflows/import.yml"
+      - ".github/workflows/build.yml"
   workflow_dispatch:
 
 permissions:
