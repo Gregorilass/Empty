@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.component.ItemLore;
 
 import java.util.List;
@@ -124,14 +125,14 @@ public final class NpcControlsMenu extends ChestMenu {
         private void refreshControls() {
             this.updating = true;
             for (int slot = 0; slot < CONTROL_SLOTS; slot++) {
-                super.setItem(slot, labelled(Items.GRAY_STAINED_GLASS_PANE, " ", "NPC controls above; storage below"));
+                super.setItem(slot, labelled(Blocks.GRAY_STAINED_GLASS_PANE.asItem(), " ", "NPC controls above; storage below"));
             }
             setButton(0, Items.COMPASS, "Follow owner", "NPC follows you", npc.isFollowing());
             setButton(1, npc.isSoldier() ? Items.SHIELD : Items.WHEAT,
                     npc.isSoldier() ? "Guard position" : "Work at farm",
                     npc.isSoldier() ? "Defend the selected guard position" : "Start farming near the worksite",
                     !npc.isFollowing());
-            setButton(2, Items.RED_BED, "Set guard/home here", "Set NPC home to your current location", false);
+            setButton(2, Blocks.RED_BED.asItem(), "Set guard/home here", "Set NPC home to your current location", false);
             if (npc.isSoldier()) {
                 setButton(3, Items.IRON_SWORD, "Attack nearby monsters", "Enable or disable auto combat", npc.isCombatEnabled());
             } else {
