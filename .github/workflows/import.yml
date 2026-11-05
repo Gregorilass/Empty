@@ -1,9 +1,10 @@
+
 name: Import Ancient Warfare Project
 
 on:
   push:
     paths:
-      - ".github/workflows/build.yml"
+      - ".github/workflows/import.yml"
   workflow_dispatch:
 
 permissions:
@@ -16,23 +17,31 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Extract and organize project
         run: |
           unzip -o -q ancientwarfare_26_3_github_upload.zip
 
           test -f build.gradle
-          test -f .github/workflows/build.yml
+          test -f gradle.properties
+          test -f scripts/validate_stage2.py
 
+          # Remove the workflow that GitHub blocks us from pushing
+          rm -f .github/workflows/build.yml
+
+          # Remove the original ZIP
           git rm ancientwarfare_26_3_github_upload.zip
-          rm .github/workflows/import.yml
 
+          # Configure Git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # Commit extracted project files
           git add -A
           git commit -m "Import Ancient Warfare project"
-          git push
+          git push origin HEAD:main
 
       - name: Install Java 25
         uses: actions/setup-java@v4
@@ -48,5 +57,13 @@ jobs:
       - name: Validate resources
         run: python3 scripts/validate_stage2.py
 
-      - name: Compile project
+      - name: Compile Ancient Warfare
         run: gradle --no-daemon --stacktrace build
+
+      - name: Upload compiled JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AncientWarfare-26.3-UNTESTED
+          path: build/libs/*.jar
+          if-no-files-found: error
