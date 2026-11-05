@@ -34,5 +34,6 @@
   "entity.ancientwarfare.worker": "Ancient Worker",
   "entity.ancientwarfare.soldier": "Ancient Soldier",
   "item.ancientwarfare.worker_spawn_egg": "Ancient Worker Spawn Egg",
-  "item.ancientwarfare.soldier_spawn_egg": "Ancient Soldier Spawn Egg"
+  "item.ancientwarfare.soldier_spawn_egg": "Ancient Soldier Spawn Egg",
+  "block.ancientwarfare.farm_worksite": "Farm Worksite"
 }

@@ -16,3 +16,10 @@ Minecraft 26.3 requires Java 25; NeoForge 26.3.0.101 and GeckoLib 5.5.7 exist. T
 - This environment has JDK 21, no NeoForge libraries, no Gradle wrapper, no outbound runtime dependency downloads.
 - No functional build or gameplay testing completed.
 - Old and modern registry IDs / codecs not compared exhaustively; no migration guarantee.
+
+## Stage 5+6 additions (uncompiled pending GitHub Actions)
+
+- AWS index and command-only guarded placement for a limited selection of vanilla block rules.
+- Legacy palette conversion with pure Java tests. All 1,484 templates remain preserved, but unsupported plugins are intentionally rejected for placement.
+- New farm worksite and worker behavior that looks for a nearby site while assigned to a farm.
+- No world generation and no inventory/tile-entity reproduction in structures yet.

@@ -17,3 +17,8 @@ assert 'fightNearbyMonster' in npc and 'harvestNearbyCrop' in npc
 structure=list((root/'src/main/resources').rglob('*.aws'))
 assert len(structure)==1484, f'Expected 1484 AWS templates, found {len(structure)}'
 print(f'Stage 4 data validation PASSED: {len(files)} JSON files, {len(structure)} AWS templates, NPC source/resources present')
+
+# Subsequent milestone regression tests, invoked by the unchanged GitHub import workflow.
+import subprocess
+import sys
+subprocess.run([sys.executable, str(root/'scripts/validate_stage56.py')], check=True)

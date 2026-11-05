@@ -13,6 +13,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CropBlock;
+import net.shadowmage.ancientwarfare.core.AncientWarfareCore;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -27,6 +28,8 @@ public class AncientNpc extends Villager {
     private boolean following = true;
     private BlockPos guardPosition = BlockPos.ZERO;
     private int tickOffset;
+    private BlockPos cachedFarm;
+    private long nextFarmSearch;
 
     public AncientNpc(EntityType<? extends Villager> type, Level level) {
         super(type, level);
@@ -56,6 +59,8 @@ public class AncientNpc extends Villager {
         following = !following;
         if (!following) {
             guardPosition = blockPosition();
+            cachedFarm = null;
+            nextFarmSearch = 0;
             this.getNavigation().stop();
         }
         player.sendSystemMessage(Component.literal(following
@@ -123,10 +128,15 @@ public class AncientNpc extends Villager {
     }
 
     private void harvestNearbyCrop(ServerLevel level) {
+        // A dedicated Ancient Warfare farm worksite anchors a crop field. Workers
+        // guarding near one will automatically work that farm, without remote chunk loads.
+        BlockPos farm = nearestFarmWorksite(level);
+        BlockPos center = farm == null ? guardPosition : farm;
         BlockPos target = null;
         double closest = 64.0;
         // Stay within a small assigned work area. Do not cause remote chunk loading.
-        for (BlockPos pos : BlockPos.betweenClosed(guardPosition.offset(-4, -1, -4), guardPosition.offset(4, 1, 4))) {
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-4, -1, -4), center.offset(4, 1, 4))) {
+            if (!level.hasChunkAt(pos)) continue;
             BlockState state = level.getBlockState(pos);
             if (!(state.getBlock() instanceof CropBlock crop) || !crop.isMaxAge(state)) continue;
             double dx = pos.getX() + 0.5 - getX();
@@ -146,6 +156,25 @@ public class AncientNpc extends Villager {
                 // Replanting consumes no seed in this initial milestone; replace with NPC inventory logic later.
             }
         }
+    }
+
+    private BlockPos nearestFarmWorksite(ServerLevel level) {
+        if (cachedFarm != null && level.hasChunkAt(cachedFarm)
+                && level.getBlockState(cachedFarm).is(AncientWarfareCore.FARM_WORKSITE.get())) return cachedFarm;
+        cachedFarm = null;
+        if (level.getGameTime() < nextFarmSearch) return null;
+        nextFarmSearch = level.getGameTime() + 100;
+        BlockPos best = null;
+        double bestDist2 = 12.0 * 12.0;
+        for (BlockPos pos : BlockPos.betweenClosed(guardPosition.offset(-8, -2, -8), guardPosition.offset(8, 2, 8))) {
+            if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(AncientWarfareCore.FARM_WORKSITE.get())) continue;
+            double dx = pos.getX() - guardPosition.getX();
+            double dz = pos.getZ() - guardPosition.getZ();
+            double d2 = dx * dx + dz * dz;
+            if (d2 < bestDist2) { best = pos.immutable(); bestDist2 = d2; }
+        }
+        cachedFarm = best;
+        return best;
     }
 
     @Override

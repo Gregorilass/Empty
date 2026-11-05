@@ -3,6 +3,10 @@ package net.shadowmage.ancientwarfare.core;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.MapColor;
+import net.neoforged.neoforge.common.NeoForge;
+import net.shadowmage.ancientwarfare.core.structure.AwsStructureCommands;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.SpawnEggItem;
@@ -11,11 +15,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * Ancient Warfare 2 modern-port milestone 4.
+ * Ancient Warfare 2 modern-port milestones 5 and 6.
  * Adds manually spawned worker and soldier NPC roles with owner/guard/follow behavior,
  * small-scale crop harvesting and monster defense. Not a complete Ancient Warfare NPC port.
  */
@@ -23,6 +28,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class AncientWarfareCore {
     public static final String MOD_ID = "ancientwarfare";
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
+    public static final DeferredBlock<Block> FARM_WORKSITE = BLOCKS.registerSimpleBlock("farm_worksite",
+            properties -> properties.mapColor(MapColor.WOOD).strength(2.0f));
+    public static final DeferredItem<?> FARM_WORKSITE_ITEM = ITEMS.registerSimpleBlockItem("farm_worksite", FARM_WORKSITE);
     private static final DeferredRegister<CreativeModeTab> TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
@@ -72,6 +81,7 @@ public final class AncientWarfareCore {
                 .icon(() -> STEEL_INGOT.get().getDefaultInstance())
                 .displayItems((parameters, output) -> {
                 output.accept(STEEL_INGOT.get());
+                output.accept(FARM_WORKSITE_ITEM.get());
                 output.accept(RESEARCH_BOOK.get());
                 output.accept(WOODEN_GEAR.get());
                 output.accept(IRON_GEAR.get());
@@ -108,6 +118,8 @@ public final class AncientWarfareCore {
 
     public AncientWarfareCore(IEventBus modBus, ModContainer container) {
         AWNpcRegistry.ENTITIES.register(modBus);
+        BLOCKS.register(modBus);
+        NeoForge.EVENT_BUS.addListener(AwsStructureCommands::register);
         modBus.addListener(AWNpcRegistry::registerAttributes);
         ITEMS.register(modBus);
         TABS.register(modBus);
