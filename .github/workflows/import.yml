@@ -1,5 +1,5 @@
 
-name: Import Ancient Warfare Project
+name: Import Ancient Warfare Stage 3
 
 on:
   push:
@@ -17,30 +17,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
-      - name: Extract and organize project
+      - name: Extract Stage 3 project
         run: |
-          unzip -o -q ancientwarfare_26_3_github_upload.zip
+          unzip -o -q AncientWarfare_Stage3_GitHub.zip
 
           test -f build.gradle
           test -f gradle.properties
-          test -f scripts/validate_stage2.py
+          test -f scripts/validate_stage3.py
 
-          # Remove the workflow that GitHub blocks us from pushing
-          rm -f .github/workflows/build.yml
+          git rm AncientWarfare_Stage3_GitHub.zip
 
-          # Remove the original ZIP
-          git rm ancientwarfare_26_3_github_upload.zip
-
-          # Configure Git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Commit extracted project files
           git add -A
-          git commit -m "Import Ancient Warfare project"
+          git commit -m "Import Ancient Warfare Stage 3"
           git push origin HEAD:main
 
       - name: Install Java 25
@@ -54,8 +46,8 @@ jobs:
         with:
           gradle-version: "9.2.1"
 
-      - name: Validate resources
-        run: python3 scripts/validate_stage2.py
+      - name: Validate Stage 3
+        run: python3 scripts/validate_stage3.py
 
       - name: Compile Ancient Warfare
         run: gradle --no-daemon --stacktrace build
@@ -64,6 +56,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: AncientWarfare-26.3-UNTESTED
+          name: AncientWarfare-26.3-Stage3-UNTESTED
           path: build/libs/*.jar
           if-no-files-found: error
+          
