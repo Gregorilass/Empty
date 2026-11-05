@@ -1,0 +1,21 @@
+license="${mod_license}"
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="Shadowmage, P3pp3rF1y, community contributors; modern-port integration"
+description='''
+An incomplete 26.3 migration starter for Ancient Warfare 2. Only core material items and 10 vanilla crafting recipes are migrated.
+'''
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type="required"
+versionRange="[${neo_version},)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"

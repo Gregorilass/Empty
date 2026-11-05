@@ -1,0 +1,16 @@
+{
+  "pattern": [
+    "I I",
+    " I ",
+    "I I"
+  ],
+  "show_notification": true,
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/iron"
+  },
+  "result": {
+    "id": "ancientwarfare:iron_gear"
+  }
+}

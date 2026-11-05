@@ -1,0 +1,61 @@
+{
+  "source_jar": "ancientwarfare-1.12.2-2.7.0.1038.jar",
+  "source_sha256": "8d1a080c33537bbe8b9585fe67a0b52efa8879c4210972082dd52995d9de90ca",
+  "source_size_bytes": 74790524,
+  "total_zip_file_entries": 9541,
+  "total_class_files": 2182,
+  "class_files_by_module": {
+    "automation": 381,
+    "core": 424,
+    "npc": 448,
+    "structure": 693,
+    "vehicle": 235,
+    "BuildConfig.class": 1
+  },
+  "original_assets_by_directory": {
+    "blockstates": 71,
+    "lang": 8,
+    "loot_tables": 177,
+    "models": 211,
+    "recipes": 40,
+    "registry": 155,
+    "research_recipes": 282,
+    "skin_pack": 3607,
+    "sounds": 364,
+    "template": 1495,
+    "textures": 716,
+    "trades": 1
+  },
+  "files_by_extension": {
+    ".json": 862,
+    ".lang": 8,
+    ".m2f": 14,
+    ".obj": 11,
+    ".jpg": 49,
+    ".png": 4310,
+    ".meta": 1,
+    ".ogg": 364,
+    ".docx": 1,
+    ".aws": 1484,
+    ".awt": 10,
+    ".mcmeta": 12,
+    ".cfg": 1
+  },
+  "migrated_core_items": [
+    "steel_ingot",
+    "research_book",
+    "wooden_gear",
+    "iron_gear",
+    "steel_gear",
+    "wooden_shaft",
+    "iron_shaft",
+    "steel_shaft",
+    "wooden_bearings",
+    "iron_bearings",
+    "steel_bearings"
+  ],
+  "target_minecraft": "26.3",
+  "target_loader": "NeoForge 26.3.0.101",
+  "status": "stage1-source-unbuilt",
+  "source_for_latest_remaster": "0.2.9 public source not confirmed"
+}

@@ -1,0 +1,16 @@
+{
+  "pattern": [
+    " P ",
+    " P ",
+    " P "
+  ],
+  "show_notification": true,
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks"
+  },
+  "result": {
+    "id": "ancientwarfare:wooden_shaft"
+  }
+}

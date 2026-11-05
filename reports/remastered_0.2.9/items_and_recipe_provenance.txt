@@ -1,0 +1,11 @@
+steel_ingot: original 1.20.1 recipe absent (not fabricated).
+research_book: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+wooden_gear: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+iron_gear: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+steel_gear: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+wooden_shaft: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+iron_shaft: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+steel_shaft: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+wooden_bearings: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+iron_bearings: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.
+steel_bearings: converted 1.20.1 recipe to 26.3 ingredient format, output id, and folder.

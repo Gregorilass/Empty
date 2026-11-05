@@ -1,0 +1,14 @@
+.gradle/
+.idea/
+.settings/
+.project
+.classpath
+build/
+run/
+run-*/
+run-data/
+out/
+*.log
+*.jar
+*.zip
+# Never publish the original compiled mods or local user files.
