@@ -18,7 +18,7 @@ public final class LogisticsBlockEntity extends BlockEntity implements Container
 
     public LogisticsBlockEntity(BlockPos pos, BlockState state) {
         super(AncientWarfareCore.LOGISTICS_BLOCK_ENTITY.get(), pos, state);
-        int slots = state.is(AncientWarfareCore.FARM_WORKSITE.get()) ? 27 : 54;
+        int slots = (state.is(AncientWarfareCore.FARM_WORKSITE.get()) || state.is(AncientWarfareCore.TREE_FARM_WORKSITE.get())) ? 27 : 54;
         items = NonNullList.withSize(slots, ItemStack.EMPTY);
     }
 

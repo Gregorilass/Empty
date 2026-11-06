@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "ancientwarfare:block/tree_farm_front",
+    "up": "ancientwarfare:block/tree_farm_top",
+    "down": "ancientwarfare:block/tree_farm_bottom",
+    "north": "ancientwarfare:block/tree_farm_front",
+    "south": "ancientwarfare:block/tree_farm_rear",
+    "west": "ancientwarfare:block/tree_farm_left",
+    "east": "ancientwarfare:block/tree_farm_right"
+  }
+}

@@ -41,3 +41,14 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
 sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+// Keep the repository's established import workflow unchanged. On GitHub Actions
+// the Gradle build also runs all port regression tests, including Stages 9+10.
+if (System.getenv('GITHUB_ACTIONS') == 'true') {
+    tasks.register('validateStage910', Exec) {
+        commandLine 'python3', 'scripts/validate_stage910.py'
+    }
+    tasks.named('check').configure {
+        dependsOn tasks.named('validateStage910')
+    }
+}

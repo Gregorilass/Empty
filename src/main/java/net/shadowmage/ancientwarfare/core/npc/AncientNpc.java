@@ -25,6 +25,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.shadowmage.ancientwarfare.core.AncientWarfareCore;
 import net.shadowmage.ancientwarfare.core.logistics.LogisticsBlockEntity;
 import net.shadowmage.ancientwarfare.core.logistics.WarehouseNetwork;
+import net.shadowmage.ancientwarfare.core.logistics.TreeFarmTask;
 
 /**
  * Stage 7: server-owned NPC with a vanilla-screen control GUI, persistent storage,
@@ -47,6 +48,7 @@ public class AncientNpc extends Villager {
     private BlockPos cachedFarm;
     private long nextFarmSearch;
     private boolean controlsOpen;
+    private long nextTreeHarvestAt;
 
     public AncientNpc(EntityType<? extends Villager> type, Level level) {
         super(type, level);
@@ -56,6 +58,10 @@ public class AncientNpc extends Villager {
 
     public boolean isSoldier() {
         return this.getType() == AWNpcRegistry.SOLDIER.get();
+    }
+
+    public boolean isLumberjack() {
+        return this.getType() == AWNpcRegistry.LUMBERJACK.get();
     }
 
     public boolean isCourier() {
@@ -75,8 +81,8 @@ public class AncientNpc extends Villager {
     public boolean hasAssignedFarm() { return assignedFarm != null; }
 
     public String statusText() {
-        return (isSoldier() ? "Soldier" : isCourier() ? "Courier" : "Worker") + " | "
-                + (following ? "Following" : isSoldier() ? "Guarding" : isCourier() ? (courierEnabled ? "Delivering" : "Paused") : farmingEnabled ? "Farming" : "Idle")
+        return (isSoldier() ? "Soldier" : isCourier() ? "Courier" : isLumberjack() ? "Lumberjack" : "Worker") + " | "
+                + (following ? "Following" : isSoldier() ? "Guarding" : isCourier() ? (courierEnabled ? "Delivering" : "Paused") : farmingEnabled ? (isLumberjack() ? "Tree cutting" : "Farming") : "Idle")
                 + " | range " + taskRadius
                 + (assignedFarm == null ? "" : " | farm " + assignedFarm.toShortString())
                 + (assignedWarehouse == null ? "" : " | warehouse " + assignedWarehouse.toShortString());
@@ -115,7 +121,7 @@ public class AncientNpc extends Villager {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.openMenu(new SimpleMenuProvider(
                     (containerId, inventory, owner) -> new NpcControlsMenu(containerId, inventory, this),
-                    Component.literal(isSoldier() ? "Soldier - Orders & Storage" : isCourier() ? "Courier - Routes & Storage" : "Worker - Orders & Storage")));
+                    Component.literal(isSoldier() ? "Soldier - Orders & Storage" : isCourier() ? "Courier - Routes & Storage" : isLumberjack() ? "Lumberjack - Orders & Storage" : "Worker - Orders & Storage")));
         }
         return InteractionResult.SUCCESS;
     }
@@ -138,13 +144,15 @@ public class AncientNpc extends Villager {
                     message = "Courier deliveries paused. Holding near home.";
                 } else if (slot == 6 && !isSoldier()) {
                     farmingEnabled = !farmingEnabled;
-                    message = farmingEnabled ? "Farming enabled." : "Farming disabled.";
+                    message = farmingEnabled ? (isLumberjack() ? "Tree cutting enabled." : "Farming enabled.")
+                            : (isLumberjack() ? "Tree cutting disabled." : "Farming disabled.");
                 } else {
                     following = false;
                     if (isCourier()) courierEnabled = true;
                     this.getNavigation().stop();
                     message = isSoldier() ? "Guarding home position."
-                            : isCourier() ? "Working assigned delivery route." : "Working near assigned farm.";
+                            : isCourier() ? "Working assigned delivery route."
+                            : isLumberjack() ? "Working at Tree Farm Worksite." : "Working near assigned farm.";
                 }
             }
             case 2 -> {
@@ -158,9 +166,9 @@ public class AncientNpc extends Villager {
                     combatEnabled = !combatEnabled;
                     message = combatEnabled ? "Monster combat enabled." : "Monster combat disabled.";
                 } else if (player.level() instanceof ServerLevel level) {
-                    BlockPos worksite = findWorksiteNear(level, player.blockPosition(), 10);
+                    BlockPos worksite = findWorksiteNear(level, player.blockPosition(), 10, isCourier(), isLumberjack());
                     if (worksite == null) {
-                        message = "No Farm Worksite found within 10 blocks of you.";
+                        message = "No suitable Worksite found within 10 blocks of you.";
                     } else {
                         assignedFarm = worksite;
                         guardPosition = worksite;
@@ -168,7 +176,7 @@ public class AncientNpc extends Villager {
                         nextFarmSearch = 0L;
                         following = false;
                         farmingEnabled = true;
-                        message = "Assigned farm: " + worksite.toShortString();
+                        message = "Assigned worksite: " + worksite.toShortString();
                     }
                 }
             }
@@ -203,15 +211,24 @@ public class AncientNpc extends Villager {
         if (message != null) player.sendSystemMessage(Component.literal("Ancient Warfare: " + message));
     }
 
-    private static BlockPos findWorksiteNear(ServerLevel level, BlockPos center, int radius) {
+    private static BlockPos findWorksiteNear(ServerLevel level, BlockPos center, int radius, boolean courier, boolean lumberjack) {
         BlockPos nearest = null;
         double best = (double) radius * radius;
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -2, -radius), center.offset(radius, 2, radius))) {
-            if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(AncientWarfareCore.FARM_WORKSITE.get())) continue;
+            if (!level.hasChunkAt(pos)) continue;
+            boolean matching = courier ? isDeliveryWorksite(level, pos)
+                    : level.getBlockState(pos).is(lumberjack ? AncientWarfareCore.TREE_FARM_WORKSITE.get()
+                            : AncientWarfareCore.FARM_WORKSITE.get());
+            if (!matching) continue;
             double distance = pos.distSqr(center);
             if (distance <= best) { nearest = pos.immutable(); best = distance; }
         }
         return nearest;
+    }
+
+    private static boolean isDeliveryWorksite(ServerLevel level, BlockPos at) {
+        return level.getBlockState(at).is(AncientWarfareCore.FARM_WORKSITE.get())
+                || level.getBlockState(at).is(AncientWarfareCore.TREE_FARM_WORKSITE.get());
     }
 
     private static BlockPos findWarehouseControllerNear(ServerLevel level, BlockPos center, int radius) {
@@ -238,6 +255,7 @@ public class AncientNpc extends Villager {
             if (courierEnabled) runCourier(level);
             else returnToGuard();
         }
+        else if (farmingEnabled && isLumberjack()) chopNearbyTree(level);
         else if (farmingEnabled) harvestNearbyCrop(level);
         else returnToGuard();
     }
@@ -299,7 +317,7 @@ public class AncientNpc extends Villager {
         if (carrying) {
             WarehouseNetwork.deliverCargo(level, assignedWarehouse, this);
         } else if (level.hasChunkAt(assignedFarm)
-                && level.getBlockState(assignedFarm).is(AncientWarfareCore.FARM_WORKSITE.get())) {
+                && isDeliveryWorksite(level, assignedFarm)) {
             LogisticsBlockEntity farm = WarehouseNetwork.findStock(level, assignedFarm);
             if (farm != null) WarehouseNetwork.collect(farm, this);
         }
@@ -308,6 +326,15 @@ public class AncientNpc extends Villager {
     private boolean isStorageEmpty() {
         for (ItemStack stack : storage) if (!stack.isEmpty()) return false;
         return true;
+    }
+
+    private void chopNearbyTree(ServerLevel level) {
+        BlockPos treeFarm = nearestFarmWorksite(level);
+        if (treeFarm == null) { returnToGuard(); return; }
+        if (level.getGameTime() < nextTreeHarvestAt) return;
+        int task = TreeFarmTask.tick(level, this, treeFarm, taskRadius);
+        if (task == 2) nextTreeHarvestAt = level.getGameTime() + 100L;
+        if (task == 0) returnToGuard();
     }
 
     private void harvestNearbyCrop(ServerLevel level) {
@@ -368,20 +395,23 @@ public class AncientNpc extends Villager {
 
     private BlockPos nearestFarmWorksite(ServerLevel level) {
         if (assignedFarm != null) {
-            if (level.hasChunkAt(assignedFarm) && level.getBlockState(assignedFarm).is(AncientWarfareCore.FARM_WORKSITE.get())) {
+            if (level.hasChunkAt(assignedFarm) && level.getBlockState(assignedFarm).is(isLumberjack()
+                    ? AncientWarfareCore.TREE_FARM_WORKSITE.get() : AncientWarfareCore.FARM_WORKSITE.get())) {
                 return assignedFarm;
             }
             assignedFarm = null;
         }
         if (cachedFarm != null && level.hasChunkAt(cachedFarm)
-                && level.getBlockState(cachedFarm).is(AncientWarfareCore.FARM_WORKSITE.get())) return cachedFarm;
+                && level.getBlockState(cachedFarm).is(isLumberjack()
+                        ? AncientWarfareCore.TREE_FARM_WORKSITE.get() : AncientWarfareCore.FARM_WORKSITE.get())) return cachedFarm;
         cachedFarm = null;
         if (level.getGameTime() < nextFarmSearch) return null;
         nextFarmSearch = level.getGameTime() + 100;
         BlockPos best = null;
         double bestDist2 = 12.0 * 12.0;
         for (BlockPos pos : BlockPos.betweenClosed(guardPosition.offset(-8, -2, -8), guardPosition.offset(8, 2, 8))) {
-            if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(AncientWarfareCore.FARM_WORKSITE.get())) continue;
+            if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(isLumberjack()
+                    ? AncientWarfareCore.TREE_FARM_WORKSITE.get() : AncientWarfareCore.FARM_WORKSITE.get())) continue;
             double dx = pos.getX() - guardPosition.getX();
             double dz = pos.getZ() - guardPosition.getZ();
             double d2 = dx * dx + dz * dz;
@@ -455,5 +485,6 @@ public class AncientNpc extends Villager {
         controlsOpen = false;
         cachedFarm = null;
         nextFarmSearch = 0;
+        nextTreeHarvestAt = 0;
     }
 }

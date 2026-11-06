@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GPG",
+    "RCR",
+    "GPG"
+  ],
+  "key": {
+    "G": "minecraft:glass_pane",
+    "P": "#minecraft:planks",
+    "R": "minecraft:redstone",
+    "C": "ancientwarfare:warehouse_controller"
+  },
+  "result": {
+    "id": "ancientwarfare:warehouse_stock_viewer",
+    "count": 1
+  }
+}

@@ -39,5 +39,9 @@
   "entity.ancientwarfare.courier": "Ancient Courier",
   "item.ancientwarfare.courier_spawn_egg": "Ancient Courier Spawn Egg",
   "block.ancientwarfare.warehouse_controller": "Warehouse Controller",
-  "block.ancientwarfare.warehouse_storage": "Warehouse Storage"
+  "block.ancientwarfare.warehouse_storage": "Warehouse Storage",
+  "block.ancientwarfare.tree_farm_worksite": "Tree Farm Worksite",
+  "block.ancientwarfare.warehouse_stock_viewer": "Warehouse Stock Viewer",
+  "entity.ancientwarfare.lumberjack": "Ancient Lumberjack",
+  "item.ancientwarfare.lumberjack_spawn_egg": "Ancient Lumberjack Spawn Egg"
 }

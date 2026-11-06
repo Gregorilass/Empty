@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LAL",
+    "PGP",
+    "LCL"
+  ],
+  "key": {
+    "L": "#minecraft:logs",
+    "A": "minecraft:oak_sapling",
+    "P": "#minecraft:planks",
+    "G": "ancientwarfare:wooden_gear",
+    "C": "minecraft:chest"
+  },
+  "result": {
+    "id": "ancientwarfare:tree_farm_worksite",
+    "count": 1
+  }
+}

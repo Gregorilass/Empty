@@ -4,6 +4,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.shadowmage.ancientwarfare.core.logistics.LogisticsBlock;
 import net.shadowmage.ancientwarfare.core.logistics.LogisticsBlockEntity;
+import net.shadowmage.ancientwarfare.core.logistics.WarehouseStockViewerBlock;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
@@ -23,7 +24,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * Ancient Warfare 2 modern-port milestone 8.
+ * Ancient Warfare 2 modern-port milestones 9 and 10.
  * Adds manually spawned worker and soldier NPC roles with owner/guard/follow behavior,
  * small-scale crop harvesting and monster defense. Not a complete Ancient Warfare NPC port.
  */
@@ -37,14 +38,20 @@ public final class AncientWarfareCore {
     // Retain the Stage 5+6 registry ID; existing farm blocks now gain a persistent inventory.
     public static final DeferredBlock<LogisticsBlock> FARM_WORKSITE = BLOCKS.registerBlock("farm_worksite",
             properties -> new LogisticsBlock(properties.mapColor(MapColor.WOOD).strength(2.0f)));
+    public static final DeferredBlock<LogisticsBlock> TREE_FARM_WORKSITE = BLOCKS.registerBlock("tree_farm_worksite",
+            properties -> new LogisticsBlock(properties.mapColor(MapColor.WOOD).strength(2.0f)));
+    public static final DeferredBlock<WarehouseStockViewerBlock> WAREHOUSE_STOCK_VIEWER = BLOCKS.registerBlock("warehouse_stock_viewer",
+            properties -> new WarehouseStockViewerBlock(properties.mapColor(MapColor.WOOD).strength(2.5f)));
     public static final DeferredBlock<LogisticsBlock> WAREHOUSE_CONTROLLER = BLOCKS.registerBlock("warehouse_controller",
             properties -> new LogisticsBlock(properties.mapColor(MapColor.METAL).strength(3.0f)));
     public static final DeferredBlock<LogisticsBlock> WAREHOUSE_STORAGE = BLOCKS.registerBlock("warehouse_storage",
             properties -> new LogisticsBlock(properties.mapColor(MapColor.WOOD).strength(2.5f)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LogisticsBlockEntity>> LOGISTICS_BLOCK_ENTITY =
             BLOCK_ENTITY_TYPES.register("logistics", () -> new BlockEntityType<>(
-                    LogisticsBlockEntity::new, FARM_WORKSITE.get(), WAREHOUSE_CONTROLLER.get(), WAREHOUSE_STORAGE.get()));
+                    LogisticsBlockEntity::new, FARM_WORKSITE.get(), TREE_FARM_WORKSITE.get(), WAREHOUSE_CONTROLLER.get(), WAREHOUSE_STORAGE.get()));
     public static final DeferredItem<?> FARM_WORKSITE_ITEM = ITEMS.registerSimpleBlockItem("farm_worksite", FARM_WORKSITE);
+    public static final DeferredItem<?> TREE_FARM_WORKSITE_ITEM = ITEMS.registerSimpleBlockItem("tree_farm_worksite", TREE_FARM_WORKSITE);
+    public static final DeferredItem<?> WAREHOUSE_STOCK_VIEWER_ITEM = ITEMS.registerSimpleBlockItem("warehouse_stock_viewer", WAREHOUSE_STOCK_VIEWER);
     public static final DeferredItem<?> WAREHOUSE_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem("warehouse_controller", WAREHOUSE_CONTROLLER);
     public static final DeferredItem<?> WAREHOUSE_STORAGE_ITEM = ITEMS.registerSimpleBlockItem("warehouse_storage", WAREHOUSE_STORAGE);
     private static final DeferredRegister<CreativeModeTab> TABS =
@@ -89,6 +96,8 @@ public final class AncientWarfareCore {
         props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.WORKER.get())));
     public static final DeferredItem<Item> SOLDIER_SPAWN_EGG = ITEMS.registerItem("soldier_spawn_egg",
         props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.SOLDIER.get())));
+    public static final DeferredItem<Item> LUMBERJACK_SPAWN_EGG = ITEMS.registerItem("lumberjack_spawn_egg",
+        props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.LUMBERJACK.get())));
     public static final DeferredItem<Item> COURIER_SPAWN_EGG = ITEMS.registerItem("courier_spawn_egg",
         props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.COURIER.get())));
 
@@ -99,6 +108,8 @@ public final class AncientWarfareCore {
                 .displayItems((parameters, output) -> {
                 output.accept(STEEL_INGOT.get());
                 output.accept(FARM_WORKSITE_ITEM.get());
+                output.accept(TREE_FARM_WORKSITE_ITEM.get());
+                output.accept(WAREHOUSE_STOCK_VIEWER_ITEM.get());
                 output.accept(WAREHOUSE_CONTROLLER_ITEM.get());
                 output.accept(WAREHOUSE_STORAGE_ITEM.get());
                 output.accept(RESEARCH_BOOK.get());
@@ -134,6 +145,7 @@ public final class AncientWarfareCore {
                 output.accept(WORKER_SPAWN_EGG.get());
                 output.accept(SOLDIER_SPAWN_EGG.get());
                 output.accept(COURIER_SPAWN_EGG.get());
+                output.accept(LUMBERJACK_SPAWN_EGG.get());
                 }).build());
 
     public AncientWarfareCore(IEventBus modBus, ModContainer container) {

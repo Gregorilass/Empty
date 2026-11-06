@@ -1,72 +1,63 @@
-# Ancient Warfare 2 — NeoForge 26.3, Stage 8: Warehouses & Couriers
+# Ancient Warfare 2 — NeoForge Minecraft 26.3 — Stages 9 + 10
 
-**Source build candidate.** Stage 8 extends the previously compiled Stage 7 project. The original 1.12.2 release (2.7.0.1038) is the feature target; the 1.20 Remastered mod is a secondary reference. Not yet full feature parity.
+**Mod version:** `0.0.10-stage10`  
+**Minecraft:** `26.3`  
+**NeoForge:** `26.3.0.101`  
+**Java:** 25 (GitHub compiler)  
+**Current state:** Offline source tests and Java syntax parsing pass. **A GitHub Gradle compile and in-game tests are still required.**
 
-Stage 8 adds **persistent inventories** to the Farm Worksite (27 slots), a craftable Warehouse Controller (54 slots), Warehouse Storage (54 slots), and a recruitable **Courier** (27 slots). A worker now deposits harvests at the worksite; the courier travels to pick them up and delivers to the assigned controller, then nearby storage if the controller is full. Contents are never silently deleted when stock is full.
+This update preserves Stage 8 workers, guards, couriers, farm worksites, controller/storage inventories, structure placement and all **1,484 legacy `.aws` structures**. Existing registry IDs and saved NPC assignment/inventory keys have not been renamed. The primary reference remains original Ancient Warfare 2 **1.12.2 v2.7.0.1038**, not the incomplete 1.20 remaster.
 
-**Setup**: Put a Farm Worksite near mature crops. Recruit a Worker, assign its nearest farm (NPC controls slot 3), then select Work (slot 1). Place a Warehouse Controller within the courier's reach and optionally Warehouse Storage within 8 blocks horizontally and 2 vertically of the controller. Recruit a Courier; select the farm with control slot 3 while standing near the worksite, select the warehouse with slot 4 while standing near the controller, and select Deliver (slot 1). Control slot 5 toggles delivery; slot 6 pauses and holds. Stock blocks open ordinary 27-/54-slot chest interfaces when right-clicked.
+## Stage 9 — Tree Farm + Lumberjack
 
-**Important**: Not all original 1.12.2 warehouse features exist yet. No stock filters, GUI network overview, advanced linked inventories, original worker jobs, or automatic recipe crafting. On old worlds, replace existing Farm Worksite blocks if they don't have an inventory. The prior worker replanting shortcut still does not consume seeds. See `reports/STAGE8_LIMITATIONS.md` and `GITHUB_SETUP.md`.
+- New craftable **Tree Farm Worksite** with **27 persistent inventory slots**, using textures restored from the original Ancient Warfare 2 1.12.2 JAR.
+- New **Lumberjack NPC spawn egg** and recruitable NPC with standard follow/home/work controls, 27 cargo slots, saved ownership and worksite assignment.
+- Lumberjacks path to nearby eligible **single-column trees** and cut their trunk, depositing logs in the assigned Tree Farm Worksite, then personal storage, then dropping only overflow to the ground.
+- Tree harvest is restricted to **oak, birch, spruce, jungle, acacia and cherry logs**, growing on dirt/grass and with a real leaf canopy, within the assigned worksite's configured radius. There is a cooldown to prevent rapid repeated harvesting. No forced chunk loading.
+- **Replanting consumes one matching sapling** from the Tree Farm Worksite inventory; no free saplings are created. Leave appropriate saplings in the worksite to enable replanting.
+- Couriers can use **either Farm Worksite or Tree Farm Worksite** as their pickup source, and leave saplings in tree-worksite inventory for replanting.
 
-**Validation commands**: `python3 scripts/validate_stage8.py` then `gradle --no-daemon build` (requires Java 25). Gameplay tests are still required even if both pass.
+### Test a Lumberjack
 
----
+1. On your **test world**, place Tree Farm Worksite close to naturally grown **1x1 oak or birch trees** with leaves above and soil below. Begin with a tree 3–8 blocks tall and within 4 blocks of the worksite.
+2. Open the Tree Farm inventory and place several **matching saplings** in it (e.g. oak saplings for an oak tree).
+3. Spawn a Lumberjack. Right-click once to recruit; right-click again for its six-row NPC menu.
+4. Stand within **10 blocks** of the tree worksite and within **8 blocks of the Lumberjack**. Click top-row **slot 3 / fourth icon** (**Assign tree farm**), then **slot 1 / second icon** (**Cut trees**). If needed, use top-row range +/- icons and tree-cutting toggle.
+5. Observe walking, harvesting, logs entering the Tree Farm's 27-slot inventory, and **one matching sapling** being consumed and planted. Watch leaves decay normally. If the inventory and NPC cargo fill, the remaining logs should drop on the ground.
+6. Spawn and recruit a Courier. Assign the Tree Farm worksite from near that block, then a Warehouse Controller while standing near it. Activate Deliver. The Courier should move wood into your existing warehouse; saplings should remain reserved at the tree farm.
 
-## Previous milestone — Stage 7
+## Stage 10 — Warehouse Stock Viewer
 
+- New craftable **Warehouse Stock Viewer** block, using original 1.12.2 artwork.
+- Place it within **12 blocks horizontally and two blocks vertically** of a Warehouse Controller, then right-click to open a vanilla **six-row overview menu**.
+- The first five rows show **up to 45 distinct stored item variants per page**; the bottom row contains previous, refresh/status and next buttons. The overview scans the **controller plus loaded Warehouse Storage blocks** within the existing Stage 8 range (8 horizontal, +/-2 vertical blocks).
+- Identical item stacks are counted together; different item components stay separate in the stock listing. Navigation and item displays are strictly **read-only** to prevent theft or duplication through virtual item slots.
+- **The Controller and Storage blocks still open their normal 54-slot inventories** for item transfers, exactly as in Stage 8. The Stock Viewer is *not* an additional storage inventory.
+- No custom UI protocol or new packet registration; the existing vanilla chest menu is reused for proxy compatibility.
 
+### Test the Stock Viewer
 
-**Partial port, source build candidate. Full compile, server startup, and gameplay tests are still required.**
-
-Stage 7 starts from the previous *working Stage 5+6 source with the equipment recipe category correction*. It preserves the original 11 materials, 20 basic melee weapons, two NPC roles, Farm Worksite, structure decoder and 1,484 `.aws` templates.
-
-## Combined Stage 7 features
-
-- **NPC control GUI**: first right-click recruits an unowned NPC; subsequent right-clicks by the owner open a **six-row vanilla chest-style graphical interface** (not a custom-textured screen). Top 3 rows are clickable labeled controls with descriptions; bottom 3 rows are 27 inventory slots. **The control slots cannot legitimately transfer items to/from players**; inventory slots support ordinary/shift-click transfers.
-- **Soldiers**: Follow, Guard/Home, Set Guard/Home Here (owner position), Enable/Disable auto monster combat, Increase/Decrease detection radius (displayed as a task range). Soldiers defend a configurable home region instead of chasing monsters indefinitely.
-- **Workers**: Follow, Work near a farm, Set Home Here, Assign nearest real Farm Worksite, Increase/Decrease farming radius (2–8 blocks), and Enable/Disable farming. Unassigned workers still auto-search for nearby worksite as in Stage 6.
-- **Personal inventory**: 27 permanent storage slots per NPC, server-owned and saved with the NPC under `AWStorage`. Harvested crop items are automatically inserted into available slots; overflow is dropped in the world, not deleted. NPC inventory drops on death. No warehouse network yet.
-- **Persistent settings**: Owner ID and existing follow/guard state retained across upgrades; home, assigned Farm Worksite, task radius and selected job toggles survive world reloads.
-- **Access control**: Only the owner can operate the NPC GUI, with an 8-block distance limit. Commands execute server-side. Minecraft's built-in `GENERIC_9x6` menu type is used, avoiding new custom-menu packet registration through Velocity.
-
-### GUI controls
-
-| Slot (first row is 0–8) | Worker | Soldier |
-|---|---|---|
-| 0 | Follow owner | Follow owner |
-| 1 | Work near assigned farm | Guard home position |
-| 2 | Set home to player position | Set guard position to player position |
-| 3 | Assign nearest Farm Worksite (within 10 blocks of player) | Toggle monster combat |
-| 4–5 | Decrease / increase farm radius (2–8) | Decrease / increase combat range (mapped from 2–8) |
-| 6 | Toggle farming enabled | Hold guard position |
-| 7 | Show NPC status in chat | Show NPC status in chat |
-| 8 | Show storage information in chat | Show storage information in chat |
-| 27–53 | 27 actual storage slots | 27 actual storage slots |
-
-Other upper slots contain information/filler items. Hover over the buttons to see instructions. Clicking slots only changes NPC behavior, never grants the UI's decorative item to the player.
-
-### Testing after building
-
-1. **Back up your server world**, stop Warfare, update the Stage 7 JAR on both the NeoForge 26.3.0.101 server and the corresponding Windows client (retain exactly one Ancient Warfare JAR per mods folder), restart.
-2. Spawn worker and soldier using existing spawn eggs, recruit each with the first right click, then right-click again to open the GUI.
-3. Toggle Follow/Guard/Work using GUI and ensure ownership enforcement works for another player.
-4. Place a Farm Worksite near fully grown wheat. Use the GUI to assign it. Enable Work, then check wheat is harvested/replanted, items appear in NPC storage, and overflow remains on the ground if storage fills.
-5. Put an ordinary item in the NPC's bottom storage rows; close/reopen GUI and restart the server to confirm persistence. Destroy NPC in an isolated test world to verify storage contents drop once on death.
-6. Set soldier home, increase/decrease combat range, turn monster attacks on/off, and spawn a zombie to verify modes.
-7. Verify `/awstructure list FillCobble`, `/awstructure inspect FillCobble1X16X16`, and `/awstructure place FillCobble1X16X16` still work in an empty test area. Inspecting does not modify the world; placing does.
-8. Test transferring through your updated Velocity lobby and watch Warfare/Velocity logs for packet errors.
+1. Place the Stock Viewer close to the existing controller, with some different items in the controller and nearby storage.
+2. Right-click the Viewer. Check item names, total quantities and pagination using the bottom-row buttons. Right-click the status/compass button to refresh after changing storage contents.
+3. Try to take or shift-click items out of the Viewer: **no virtual items should be obtainable**. Retrieve actual items normally by opening Controller/Storage inventories.
+4. Restart the server. Confirm original warehouse inventories, NPC settings, worksite inventories and Viewer are still present. Recheck stock quantities and courier deliveries.
 
 ## Build and validation
 
 ```bash
-python3 scripts/validate_stage7.py
-gradle --no-daemon build
+python3 scripts/validate_stage910.py
+gradle --no-daemon --stacktrace build
 ```
 
-Gradle requires Java 25 and the Minecraft 26.3/NeoForge 26.3.0.101 mod development dependencies. The previous GitHub Actions workflow compiles with Java 25 and Gradle 9.2.1. This archive is intended for the same GitHub workflow after importing it. Static/offline checks are included; they do **not** prove that the mod compiles or loads.
+On GitHub Actions, Gradle `check` automatically runs the offline validator, which includes inherited Stage 7/8 checks, the structure manifest, all JSON assets, and new integration points. This does **not** replace Java 25 / NeoForge compilation or gameplay tests. Prior workflow configuration in the GitHub repo is deliberately not changed by this ZIP; read `GITHUB_SETUP.md`.
 
-### Important limitations
+## Known limitations
 
-This is a functional **vanilla chest-style menu**, not the original Ancient Warfare custom GUI, and does not reproduce every original NPC role. Farm replanting still does not consume seeds (from Stage 6). Storage is not a warehouse network. Factions, research, siege machines, quarry, other jobs, and complete legacy building support are still missing. No automatic worldgen or advanced NPC models yet.
+- Only conservative 1x1 tree trunks are processed; **2x2 giant trees, dark oak, mangrove, Nether fungi and extensive branches are not supported**. Leaves may decay and drop saplings on the ground (the Lumberjack doesn't collect free-floating items).
+- Tree cutting is an initial gameplay implementation, not the full 1.12.2 tree scanner or forestry research module. Use the test world until gameplay checks finish.
+- The stock viewer is view-only: original stock filters, item withdrawal screen, auto-crafting, stock linkers, research requirements and advanced permission settings remain future work.
+- Existing Stage 8 crop farms still replant without consuming seeds; they are unchanged by this release.
+- No forced chunk loading, cross-dimensional courier transfers or server-wide global warehouse indexing.
+- Multiplayer and dedicated server gameplay validation must follow a successful GitHub build.
 
-The project retains upstream attributions and GPL-3.0-or-later license files where applicable.
+See `reports/STAGE9_10_LIMITATIONS.md` for scope and regression checklist. Legacy Stage 8 README is saved in `reports/README_STAGE8_ARCHIVED.md`.

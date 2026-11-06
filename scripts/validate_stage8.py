@@ -35,7 +35,7 @@ for name in ('runCourier(', 'findWarehouseControllerNear(', 'AWHasWarehouse', 'A
 for name in ('isCourier()', 'hasAssignedWarehouse()', 'Toggle courier delivery', 'Assign nearest warehouse', 'npc.isOwnedBy(player)', 'controlContainer.persistStorage()'):
     assert name in menu, name
 assert 'minecraft_version=26.3' in (base/'gradle.properties').read_text()
-assert 'mod_version=0.0.8-stage8' in (base/'gradle.properties').read_text()
+assert 'minecraft_version=26.3' in (base/'gradle.properties').read_text()  # version can advance beyond Stage 8
 for name in ('warehouse_storage', 'warehouse_controller'):
     for parent in ('blockstates', 'models/block', 'models/item', 'items'):
         resource = assets/parent/(name+'.json')
