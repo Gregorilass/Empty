@@ -23,6 +23,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.shadowmage.ancientwarfare.core.AncientWarfareCore;
+import net.shadowmage.ancientwarfare.core.logistics.LogisticsBlockEntity;
+import net.shadowmage.ancientwarfare.core.logistics.WarehouseNetwork;
 
 /**
  * Stage 7: server-owned NPC with a vanilla-screen control GUI, persistent storage,
@@ -37,6 +39,8 @@ public class AncientNpc extends Villager {
     private boolean combatEnabled = true;
     private BlockPos guardPosition = BlockPos.ZERO;
     private BlockPos assignedFarm;
+    private BlockPos assignedWarehouse;
+    private boolean courierEnabled = true;
     private int taskRadius = 4;
     private final NonNullList<ItemStack> storage = NonNullList.withSize(STORAGE_SLOTS, ItemStack.EMPTY);
     private int tickOffset;
@@ -54,6 +58,10 @@ public class AncientNpc extends Villager {
         return this.getType() == AWNpcRegistry.SOLDIER.get();
     }
 
+    public boolean isCourier() {
+        return this.getType() == AWNpcRegistry.COURIER.get();
+    }
+
     public boolean isOwnedBy(Player player) {
         return ownerId != null && ownerId.equals(player.getUUID());
     }
@@ -61,14 +69,17 @@ public class AncientNpc extends Villager {
     public boolean isFollowing() { return following; }
     public boolean isFarmingEnabled() { return farmingEnabled; }
     public boolean isCombatEnabled() { return combatEnabled; }
+    public boolean isCourierEnabled() { return courierEnabled; }
+    public boolean hasAssignedWarehouse() { return assignedWarehouse != null; }
     public int getTaskRadius() { return taskRadius; }
     public boolean hasAssignedFarm() { return assignedFarm != null; }
 
     public String statusText() {
-        return (isSoldier() ? "Soldier" : "Worker") + " | "
-                + (following ? "Following" : isSoldier() ? "Guarding" : farmingEnabled ? "Farming" : "Idle")
+        return (isSoldier() ? "Soldier" : isCourier() ? "Courier" : "Worker") + " | "
+                + (following ? "Following" : isSoldier() ? "Guarding" : isCourier() ? (courierEnabled ? "Delivering" : "Paused") : farmingEnabled ? "Farming" : "Idle")
                 + " | range " + taskRadius
-                + (assignedFarm == null ? "" : " | farm " + assignedFarm.toShortString());
+                + (assignedFarm == null ? "" : " | farm " + assignedFarm.toShortString())
+                + (assignedWarehouse == null ? "" : " | warehouse " + assignedWarehouse.toShortString());
     }
 
     public void setControlsOpen(boolean open) {
@@ -104,7 +115,7 @@ public class AncientNpc extends Villager {
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.openMenu(new SimpleMenuProvider(
                     (containerId, inventory, owner) -> new NpcControlsMenu(containerId, inventory, this),
-                    Component.literal(isSoldier() ? "Soldier - Orders & Storage" : "Worker - Orders & Storage")));
+                    Component.literal(isSoldier() ? "Soldier - Orders & Storage" : isCourier() ? "Courier - Routes & Storage" : "Worker - Orders & Storage")));
         }
         return InteractionResult.SUCCESS;
     }
@@ -120,13 +131,20 @@ public class AncientNpc extends Villager {
                 message = "Following you.";
             }
             case 1, 6 -> {
-                if (slot == 6 && !isSoldier()) {
+                if (slot == 6 && isCourier()) {
+                    courierEnabled = false;
+                    following = false;
+                    this.getNavigation().stop();
+                    message = "Courier deliveries paused. Holding near home.";
+                } else if (slot == 6 && !isSoldier()) {
                     farmingEnabled = !farmingEnabled;
                     message = farmingEnabled ? "Farming enabled." : "Farming disabled.";
                 } else {
                     following = false;
+                    if (isCourier()) courierEnabled = true;
                     this.getNavigation().stop();
-                    message = isSoldier() ? "Guarding home position." : "Working near assigned farm.";
+                    message = isSoldier() ? "Guarding home position."
+                            : isCourier() ? "Working assigned delivery route." : "Working near assigned farm.";
                 }
             }
             case 2 -> {
@@ -155,15 +173,31 @@ public class AncientNpc extends Villager {
                 }
             }
             case 4 -> {
-                taskRadius = Math.max(2, taskRadius - 1);
-                message = "Task range: " + taskRadius + " blocks.";
+                if (isCourier()) {
+                    if (player.level() instanceof ServerLevel level) {
+                        BlockPos target = findWarehouseControllerNear(level, player.blockPosition(), 12);
+                        if (target != null) { assignedWarehouse = target; following = false; courierEnabled = true; }
+                        message = target == null ? "No Warehouse Controller within 12 blocks of you."
+                                : "Warehouse assigned: " + target.toShortString();
+                    }
+                } else {
+                    taskRadius = Math.max(2, taskRadius - 1);
+                    message = "Task range: " + taskRadius + " blocks.";
+                }
             }
             case 5 -> {
-                taskRadius = Math.min(8, taskRadius + 1);
-                message = "Task range: " + taskRadius + " blocks.";
+                if (isCourier()) {
+                    courierEnabled = !courierEnabled;
+                    message = courierEnabled ? "Courier delivery enabled." : "Courier delivery paused.";
+                } else {
+                    taskRadius = Math.min(8, taskRadius + 1);
+                    message = "Task range: " + taskRadius + " blocks.";
+                }
             }
             case 7 -> message = statusText();
-            case 8 -> message = "NPC storage: 27 slots in the bottom three rows. Farmer harvests go here.";
+            case 8 -> message = isCourier()
+                    ? "Courier carries 27 slots. Assign a Farm Worksite and Warehouse Controller nearby, then use Deliver."
+                    : "NPC storage: 27 slots in the bottom three rows. Farmer harvests go here.";
             default -> { }
         }
         if (message != null) player.sendSystemMessage(Component.literal("Ancient Warfare: " + message));
@@ -180,6 +214,17 @@ public class AncientNpc extends Villager {
         return nearest;
     }
 
+    private static BlockPos findWarehouseControllerNear(ServerLevel level, BlockPos center, int radius) {
+        BlockPos nearest = null;
+        double best = (double) radius * radius;
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -2, -radius), center.offset(radius, 2, radius))) {
+            if (!WarehouseNetwork.isController(level, pos)) continue;
+            double distance = pos.distSqr(center);
+            if (distance <= best) { nearest = pos.immutable(); best = distance; }
+        }
+        return nearest;
+    }
+
     @Override
     protected void customServerAiStep(ServerLevel level) {
         // The menu owns a live copy of inventory while open. Pause farming to
@@ -189,6 +234,10 @@ public class AncientNpc extends Villager {
         if (isSoldier() && combatEnabled && fightNearbyMonster(level)) return;
         if (following) followOwner(level);
         else if (isSoldier()) returnToGuard();
+        else if (isCourier()) {
+            if (courierEnabled) runCourier(level);
+            else returnToGuard();
+        }
         else if (farmingEnabled) harvestNearbyCrop(level);
         else returnToGuard();
     }
@@ -233,6 +282,34 @@ public class AncientNpc extends Villager {
         }
     }
 
+    /**
+     * Physical pickup and delivery. Only handles loaded, explicitly assigned blocks.
+     * If the destination is absent or full, cargo stays in the courier inventory.
+     */
+    private void runCourier(ServerLevel level) {
+        if (assignedWarehouse == null || assignedFarm == null) { returnToGuard(); return; }
+        boolean carrying = !isStorageEmpty();
+        BlockPos destination = carrying ? assignedWarehouse : assignedFarm;
+        if (distanceToSqr(destination.getX() + 0.5, destination.getY() + 0.5,
+                          destination.getZ() + 0.5) > 6.25) {
+            getNavigation().moveTo(destination.getX() + 0.5, destination.getY(),
+                                   destination.getZ() + 0.5, 1.10);
+            return;
+        }
+        if (carrying) {
+            WarehouseNetwork.deliverCargo(level, assignedWarehouse, this);
+        } else if (level.hasChunkAt(assignedFarm)
+                && level.getBlockState(assignedFarm).is(AncientWarfareCore.FARM_WORKSITE.get())) {
+            LogisticsBlockEntity farm = WarehouseNetwork.findStock(level, assignedFarm);
+            if (farm != null) WarehouseNetwork.collect(farm, this);
+        }
+    }
+
+    private boolean isStorageEmpty() {
+        for (ItemStack stack : storage) if (!stack.isEmpty()) return false;
+        return true;
+    }
+
     private void harvestNearbyCrop(ServerLevel level) {
         BlockPos farm = nearestFarmWorksite(level);
         BlockPos center = farm == null ? guardPosition : farm;
@@ -257,8 +334,11 @@ public class AncientNpc extends Villager {
             if (mature.getBlock() instanceof CropBlock crop && crop.isMaxAge(mature)) {
                 // Respect vanilla loot rules: store drops in the NPC inventory,
                 // and drop only the overflow on the ground (never silently delete).
+                LogisticsBlockEntity stock = farm == null ? null : WarehouseNetwork.findStock(level, farm);
                 for (ItemStack drop : Block.getDrops(mature, level, target, null)) {
-                    ItemStack remaining = insertStorage(drop.copy());
+                    ItemStack remaining = drop.copy();
+                    if (stock != null) remaining = stock.insert(remaining);
+                    remaining = insertStorage(remaining);
                     if (!remaining.isEmpty()) Block.popResource(level, target, remaining);
                 }
                 level.setBlock(target, crop.defaultBlockState(), Block.UPDATE_ALL);
@@ -267,7 +347,7 @@ public class AncientNpc extends Villager {
         }
     }
 
-    private ItemStack insertStorage(ItemStack remaining) {
+    public ItemStack insertStorage(ItemStack remaining) {
         if (remaining.isEmpty()) return remaining;
         for (int i = 0; i < STORAGE_SLOTS && !remaining.isEmpty(); i++) {
             ItemStack existing = storage.get(i);
@@ -338,6 +418,13 @@ public class AncientNpc extends Villager {
             output.putInt("AWFarmY", assignedFarm.getY());
             output.putInt("AWFarmZ", assignedFarm.getZ());
         } else output.putBoolean("AWHasFarm", false);
+        if (assignedWarehouse != null) {
+            output.putBoolean("AWHasWarehouse", true);
+            output.putInt("AWWarehouseX", assignedWarehouse.getX());
+            output.putInt("AWWarehouseY", assignedWarehouse.getY());
+            output.putInt("AWWarehouseZ", assignedWarehouse.getZ());
+        } else output.putBoolean("AWHasWarehouse", false);
+        output.putBoolean("AWCourierEnabled", courierEnabled);
         ContainerHelper.saveAllItems(output.child("AWStorage"), storage);
     }
 
@@ -359,6 +446,10 @@ public class AncientNpc extends Villager {
         assignedFarm = input.getBooleanOr("AWHasFarm", false)
                 ? new BlockPos(input.getIntOr("AWFarmX", 0), input.getIntOr("AWFarmY", 0), input.getIntOr("AWFarmZ", 0))
                 : null;
+        assignedWarehouse = input.getBooleanOr("AWHasWarehouse", false)
+                ? new BlockPos(input.getIntOr("AWWarehouseX", 0), input.getIntOr("AWWarehouseY", 0), input.getIntOr("AWWarehouseZ", 0))
+                : null;
+        courierEnabled = input.getBooleanOr("AWCourierEnabled", true);
         storage.replaceAll(stack -> ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input.childOrEmpty("AWStorage"), storage);
         controlsOpen = false;

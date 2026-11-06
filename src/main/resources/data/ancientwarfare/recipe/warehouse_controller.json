@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ICI",
+    "GWG",
+    "ICI"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "C": "minecraft:chest",
+    "G": "ancientwarfare:iron_gear",
+    "W": "ancientwarfare:wooden_gear"
+  },
+  "result": {
+    "id": "ancientwarfare:warehouse_controller",
+    "count": 1
+  }
+}

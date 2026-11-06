@@ -129,26 +129,33 @@ public final class NpcControlsMenu extends ChestMenu {
                 super.setItem(slot, labelled(vanillaItem("gray_stained_glass_pane"), " ", "NPC controls above; storage below"));
             }
             setButton(0, Items.COMPASS, "Follow owner", "NPC follows you", npc.isFollowing());
-            setButton(1, npc.isSoldier() ? Items.SHIELD : Items.WHEAT,
-                    npc.isSoldier() ? "Guard position" : "Work at farm",
-                    npc.isSoldier() ? "Defend the selected guard position" : "Start farming near the worksite",
+            setButton(1, npc.isSoldier() ? Items.SHIELD : npc.isCourier() ? Items.MINECART : Items.WHEAT,
+                    npc.isSoldier() ? "Guard position" : npc.isCourier() ? "Deliver on route" : "Work at farm",
+                    npc.isSoldier() ? "Defend the selected guard position" : npc.isCourier() ? "Use the configured farm and warehouse" : "Start farming near the worksite",
                     !npc.isFollowing());
             setButton(2, vanillaItem("red_bed"), "Set guard/home here", "Set NPC home to your current location", false);
             if (npc.isSoldier()) {
                 setButton(3, Items.IRON_SWORD, "Attack nearby monsters", "Enable or disable auto combat", npc.isCombatEnabled());
             } else {
-                setButton(3, Items.COMPOSTER, "Assign nearest farm", "Find a Farm Worksite near your feet", npc.hasAssignedFarm());
+                setButton(3, Items.COMPOSTER, "Assign nearest farm", "Find a Farm Worksite within 10 blocks of you", npc.hasAssignedFarm());
             }
-            setButton(4, Items.ARROW, "Decrease range", "Current range: " + npc.getTaskRadius() + " blocks", false);
-            setButton(5, Items.SPECTRAL_ARROW, "Increase range", "Current range: " + npc.getTaskRadius() + " blocks", false);
+            if (npc.isCourier()) {
+                setButton(4, Items.CHEST, "Assign nearest warehouse", "Warehouse Controller within 12 blocks of you", npc.hasAssignedWarehouse());
+                setButton(5, Items.LEVER, "Toggle courier delivery", "Allow or pause item deliveries", npc.isCourierEnabled());
+            } else {
+                setButton(4, Items.ARROW, "Decrease range", "Current range: " + npc.getTaskRadius() + " blocks", false);
+                setButton(5, Items.SPECTRAL_ARROW, "Increase range", "Current range: " + npc.getTaskRadius() + " blocks", false);
+            }
             if (npc.isSoldier()) {
                 setButton(6, Items.IRON_CHESTPLATE, "Hold position", "Stay at home until ordered to follow", !npc.isFollowing());
+            } else if (npc.isCourier()) {
+                setButton(6, Items.BARREL, "Hold position", "Pause at home until another order", false);
             } else {
                 setButton(6, Items.BARREL, "Farming enabled", "Toggle harvesting when in work mode", npc.isFarmingEnabled());
             }
             setButton(7, Items.WRITABLE_BOOK, "NPC status", npc.statusText(), false);
             setButton(8, Items.CHEST, "NPC inventory", "27 persistent slots in the three bottom rows", false);
-            setButton(13, Items.OAK_SIGN, npc.isSoldier() ? "SOLDIER CONTROLS" : "WORKER CONTROLS",
+            setButton(13, Items.OAK_SIGN, npc.isSoldier() ? "SOLDIER CONTROLS" : npc.isCourier() ? "COURIER ROUTES" : "WORKER CONTROLS",
                     "Click upper buttons to give orders", false);
             setButton(22, Items.HOPPER, "STORAGE BELOW", "Shift-click to transfer items", false);
             this.updating = false;

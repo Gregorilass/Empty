@@ -1,4 +1,20 @@
-# Ancient Warfare 2 — NeoForge Minecraft 26.3 (Stage 7 NPC Controls)
+# Ancient Warfare 2 — NeoForge 26.3, Stage 8: Warehouses & Couriers
+
+**Source build candidate.** Stage 8 extends the previously compiled Stage 7 project. The original 1.12.2 release (2.7.0.1038) is the feature target; the 1.20 Remastered mod is a secondary reference. Not yet full feature parity.
+
+Stage 8 adds **persistent inventories** to the Farm Worksite (27 slots), a craftable Warehouse Controller (54 slots), Warehouse Storage (54 slots), and a recruitable **Courier** (27 slots). A worker now deposits harvests at the worksite; the courier travels to pick them up and delivers to the assigned controller, then nearby storage if the controller is full. Contents are never silently deleted when stock is full.
+
+**Setup**: Put a Farm Worksite near mature crops. Recruit a Worker, assign its nearest farm (NPC controls slot 3), then select Work (slot 1). Place a Warehouse Controller within the courier's reach and optionally Warehouse Storage within 8 blocks horizontally and 2 vertically of the controller. Recruit a Courier; select the farm with control slot 3 while standing near the worksite, select the warehouse with slot 4 while standing near the controller, and select Deliver (slot 1). Control slot 5 toggles delivery; slot 6 pauses and holds. Stock blocks open ordinary 27-/54-slot chest interfaces when right-clicked.
+
+**Important**: Not all original 1.12.2 warehouse features exist yet. No stock filters, GUI network overview, advanced linked inventories, original worker jobs, or automatic recipe crafting. On old worlds, replace existing Farm Worksite blocks if they don't have an inventory. The prior worker replanting shortcut still does not consume seeds. See `reports/STAGE8_LIMITATIONS.md` and `GITHUB_SETUP.md`.
+
+**Validation commands**: `python3 scripts/validate_stage8.py` then `gradle --no-daemon build` (requires Java 25). Gameplay tests are still required even if both pass.
+
+---
+
+## Previous milestone — Stage 7
+
+
 
 **Partial port, source build candidate. Full compile, server startup, and gameplay tests are still required.**
 

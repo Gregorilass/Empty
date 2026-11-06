@@ -21,6 +21,11 @@ public final class AWNpcRegistry {
         builder -> builder.sized(0.6f, 1.95f).clientTrackingRange(8).updateInterval(3)
     );
 
+    public static final Supplier<EntityType<AncientNpc>> COURIER = ENTITIES.registerEntityType(
+        "courier", AncientNpc::new, MobCategory.CREATURE,
+        builder -> builder.sized(0.6f, 1.95f).clientTrackingRange(8).updateInterval(3)
+    );
+
     public static final Supplier<EntityType<AncientNpc>> SOLDIER = ENTITIES.registerEntityType(
         "soldier", AncientNpc::new, MobCategory.CREATURE,
         builder -> builder.sized(0.6f, 1.95f).clientTrackingRange(8).updateInterval(3)
@@ -28,6 +33,10 @@ public final class AWNpcRegistry {
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(WORKER.get(), Villager.createAttributes()
+            .add(Attributes.MAX_HEALTH, 20.0)
+            .add(Attributes.MOVEMENT_SPEED, 0.50)
+            .build());
+        event.put(COURIER.get(), Villager.createAttributes()
             .add(Attributes.MAX_HEALTH, 20.0)
             .add(Attributes.MOVEMENT_SPEED, 0.50)
             .build());

@@ -18,5 +18,6 @@ public final class AWNpcClient {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.<Villager>registerEntityRenderer(AWNpcRegistry.WORKER.get(), VillagerRenderer::new);
         event.<Villager>registerEntityRenderer(AWNpcRegistry.SOLDIER.get(), VillagerRenderer::new);
+        event.<Villager>registerEntityRenderer(AWNpcRegistry.COURIER.get(), VillagerRenderer::new);
     }
 }

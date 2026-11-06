@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "ancientwarfare:block/warehouse_controller"
+    }
+  }
+}

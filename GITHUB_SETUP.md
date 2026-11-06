@@ -1,15 +1,23 @@
-# Stage 7 — build through existing Gregorilass/Empty workflow
+# Stage 8 upload / build
 
-The repository's existing `.github/workflows/import.yml` triggers only when a source upload has the exact historical filename `AncientWarfare_Stages_5_and_6_GitHub_Upload.zip`.
+Repository: https://github.com/Gregorilass/Empty
 
-The **contents of the new archive are Stage 7**, despite that legacy filename.
+**Status:** Source project is ready for GitHub import. The original Stage 8 upload failed before compilation because `.github/workflows/stage8.yml` was rejected by GitHub's default Actions token, which lacks `workflows` permission. This corrected ZIP excludes that file and uses the repository's already-existing `.github/workflows/import.yml` without modifying it.
 
-1. In https://github.com/Gregorilass/Empty choose **Add file → Upload files**.
-2. Upload `AncientWarfare_Stages_5_and_6_GitHub_Upload.zip` from this deliverable. Commit it to `main`.
-3. GitHub Actions automatically runs `Import Ancient Warfare Stages 5 and 6` (the old workflow name). It unpacks Stage 7, commits the code, sets up Java 25/Gradle 9.2.1 and compiles.
-4. Open the successful Actions run and download its artifact (currently named `AncientWarfare-26.3-Stage5-6-UNTESTED` by the old workflow). Extract the artifact ZIP and check that the **inner mod JAR is named `ancientwarfare-0.0.7-stage7.jar`**.
-5. Back up the Warfare world, stop the server, replace the old Ancient Warfare JAR with the Stage 7 one; also replace the old Ancient Warfare JAR in the Windows NeoForge 26.3 client `mods` folder. Keep only one AW JAR per folder. Do not replace the separately patched Proxy Compatible Forge JAR. Start and test on a copied/backed-up world.
+## Upload using the existing workflow
 
-If the Action is red, do not install any JAR. Retrieve its Gradle build log and fix compiler errors before attempting gameplay.
+1. In the repository, select **Add file -> Upload files**.
+2. Replace the existing file on `main` with the file named **`AncientWarfare_Stages_5_and_6_GitHub_Upload.zip`** from this corrected release, then commit. The historical filename is required by the existing `.github/workflows/import.yml` trigger, even though the archive **contains Stage 8**.
+3. Existing GitHub Actions will extract and commit the source project, validate Stages 3 and 4, compile with Java 25 / Gradle 9.2.1, and upload the built JAR as an artifact if successful.
+4. **Stage 8 static regression checks are included but are not part of the historical importer workflow.** Run them explicitly with `python3 scripts/validate_stage8.py` when possible.
+5. If the GitHub build succeeds, download the resulting GitHub Actions artifact. Expected inner JAR filename: **`ancientwarfare-0.0.8-stage8.jar`**. A green compile does not prove in-game functionality.
+6. **Back up the world.** Test on a copied Minecraft 26.3 / NeoForge 26.3.0.101 server and matching client. Use just one Ancient Warfare JAR per mods folder.
 
-**Status of this archive:** all offline source/resource/regression validations pass; **full Gradle compile and in-game tests have not yet been performed.**
+Local checks (Java 25 and Gradle 9.2.1 needed for compilation):
+
+```bash
+python3 scripts/validate_stage8.py
+gradle --no-daemon --stacktrace build
+```
+
+See `reports/STAGE8_LIMITATIONS.md` for the in-game regression procedure.

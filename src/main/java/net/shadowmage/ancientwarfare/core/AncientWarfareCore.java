@@ -1,6 +1,9 @@
 package net.shadowmage.ancientwarfare.core;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.shadowmage.ancientwarfare.core.logistics.LogisticsBlock;
+import net.shadowmage.ancientwarfare.core.logistics.LogisticsBlockEntity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +23,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * Ancient Warfare 2 modern-port milestones 5 and 6.
+ * Ancient Warfare 2 modern-port milestone 8.
  * Adds manually spawned worker and soldier NPC roles with owner/guard/follow behavior,
  * small-scale crop harvesting and monster defense. Not a complete Ancient Warfare NPC port.
  */
@@ -29,9 +32,21 @@ public final class AncientWarfareCore {
     public static final String MOD_ID = "ancientwarfare";
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
-    public static final DeferredBlock<Block> FARM_WORKSITE = BLOCKS.registerSimpleBlock("farm_worksite",
-            properties -> properties.mapColor(MapColor.WOOD).strength(2.0f));
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
+    // Retain the Stage 5+6 registry ID; existing farm blocks now gain a persistent inventory.
+    public static final DeferredBlock<LogisticsBlock> FARM_WORKSITE = BLOCKS.registerBlock("farm_worksite",
+            properties -> new LogisticsBlock(properties.mapColor(MapColor.WOOD).strength(2.0f)));
+    public static final DeferredBlock<LogisticsBlock> WAREHOUSE_CONTROLLER = BLOCKS.registerBlock("warehouse_controller",
+            properties -> new LogisticsBlock(properties.mapColor(MapColor.METAL).strength(3.0f)));
+    public static final DeferredBlock<LogisticsBlock> WAREHOUSE_STORAGE = BLOCKS.registerBlock("warehouse_storage",
+            properties -> new LogisticsBlock(properties.mapColor(MapColor.WOOD).strength(2.5f)));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LogisticsBlockEntity>> LOGISTICS_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("logistics", () -> new BlockEntityType<>(
+                    LogisticsBlockEntity::new, FARM_WORKSITE.get(), WAREHOUSE_CONTROLLER.get(), WAREHOUSE_STORAGE.get()));
     public static final DeferredItem<?> FARM_WORKSITE_ITEM = ITEMS.registerSimpleBlockItem("farm_worksite", FARM_WORKSITE);
+    public static final DeferredItem<?> WAREHOUSE_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem("warehouse_controller", WAREHOUSE_CONTROLLER);
+    public static final DeferredItem<?> WAREHOUSE_STORAGE_ITEM = ITEMS.registerSimpleBlockItem("warehouse_storage", WAREHOUSE_STORAGE);
     private static final DeferredRegister<CreativeModeTab> TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
@@ -74,6 +89,8 @@ public final class AncientWarfareCore {
         props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.WORKER.get())));
     public static final DeferredItem<Item> SOLDIER_SPAWN_EGG = ITEMS.registerItem("soldier_spawn_egg",
         props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.SOLDIER.get())));
+    public static final DeferredItem<Item> COURIER_SPAWN_EGG = ITEMS.registerItem("courier_spawn_egg",
+        props -> new SpawnEggItem(props.spawnEgg(AWNpcRegistry.COURIER.get())));
 
     private static final DeferredHolder<CreativeModeTab, CreativeModeTab> MATERIALS_TAB =
             TABS.register("materials", () -> CreativeModeTab.builder()
@@ -82,6 +99,8 @@ public final class AncientWarfareCore {
                 .displayItems((parameters, output) -> {
                 output.accept(STEEL_INGOT.get());
                 output.accept(FARM_WORKSITE_ITEM.get());
+                output.accept(WAREHOUSE_CONTROLLER_ITEM.get());
+                output.accept(WAREHOUSE_STORAGE_ITEM.get());
                 output.accept(RESEARCH_BOOK.get());
                 output.accept(WOODEN_GEAR.get());
                 output.accept(IRON_GEAR.get());
@@ -114,11 +133,13 @@ public final class AncientWarfareCore {
                 output.accept(DIAMOND_CLEAVER.get());
                 output.accept(WORKER_SPAWN_EGG.get());
                 output.accept(SOLDIER_SPAWN_EGG.get());
+                output.accept(COURIER_SPAWN_EGG.get());
                 }).build());
 
     public AncientWarfareCore(IEventBus modBus, ModContainer container) {
         AWNpcRegistry.ENTITIES.register(modBus);
         BLOCKS.register(modBus);
+        BLOCK_ENTITY_TYPES.register(modBus);
         NeoForge.EVENT_BUS.addListener(AwsStructureCommands::register);
         modBus.addListener(AWNpcRegistry::registerAttributes);
         ITEMS.register(modBus);

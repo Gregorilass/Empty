@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PGP"
+  ],
+  "key": {
+    "P": "#minecraft:planks",
+    "C": "minecraft:chest",
+    "G": "ancientwarfare:wooden_gear"
+  },
+  "result": {
+    "id": "ancientwarfare:warehouse_storage",
+    "count": 1
+  }
+}

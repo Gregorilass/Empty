@@ -35,5 +35,9 @@
   "entity.ancientwarfare.soldier": "Ancient Soldier",
   "item.ancientwarfare.worker_spawn_egg": "Ancient Worker Spawn Egg",
   "item.ancientwarfare.soldier_spawn_egg": "Ancient Soldier Spawn Egg",
-  "block.ancientwarfare.farm_worksite": "Farm Worksite"
+  "block.ancientwarfare.farm_worksite": "Farm Worksite",
+  "entity.ancientwarfare.courier": "Ancient Courier",
+  "item.ancientwarfare.courier_spawn_egg": "Ancient Courier Spawn Egg",
+  "block.ancientwarfare.warehouse_controller": "Warehouse Controller",
+  "block.ancientwarfare.warehouse_storage": "Warehouse Storage"
 }
